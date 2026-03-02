@@ -1,12 +1,25 @@
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Building2, Mail, Phone, MapPin, Users, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
-import { useState } from "react";
 
-const managers = [
+interface Manager {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  pgsManaged: string[];
+  guestsManaged: number;
+  experience: string;
+  joinDate: string;
+  status: string;
+}
+
+const initialManagers: Manager[] = [
   {
     id: 1,
     name: "Vikram Singh",
@@ -58,8 +71,20 @@ const managers = [
 ];
 
 export function ManagersTable() {
+  const [managers, setManagers] = useState<Manager[]>(initialManagers);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    pgsManaged: "",
+    guestsManaged: "",
+    experience: "",
+    joinDate: "",
+    status: "",
+  });
 
   const handleToggleRow = (managerId: number) => {
     setExpandedRows((prev) =>
@@ -71,6 +96,44 @@ export function ManagersTable() {
 
   const handleAddManager = () => {
     setAddDialogOpen(true);
+  };
+
+  const handleFormChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (!formData.name || !formData.email || !formData.phone) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const newManager: Manager = {
+      id: managers.length > 0 ? Math.max(...managers.map(m => m.id)) + 1 : 1,
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address || "N/A",
+      pgsManaged: formData.pgsManaged ? formData.pgsManaged.split(",").map(pg => pg.trim()) : [],
+      guestsManaged: parseInt(formData.guestsManaged) || 0,
+      experience: formData.experience || "0 years",
+      joinDate: formData.joinDate || new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      status: formData.status || "active",
+    };
+
+    setManagers((prev) => [...prev, newManager]);
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      pgsManaged: "",
+      guestsManaged: "",
+      experience: "",
+      joinDate: "",
+      status: "",
+    });
+    setAddDialogOpen(false);
   };
 
   return (
@@ -101,7 +164,7 @@ export function ManagersTable() {
               <tbody>
                 {managers.map((manager) => (
                   <>
-                    <tr key={manager.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr key={`manager-${manager.id}`} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-4 px-4">
                         <button
                           onClick={() => handleToggleRow(manager.id)}
@@ -233,53 +296,53 @@ export function ManagersTable() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="Enter name" />
+                <Input id="name" placeholder="Enter name" value={formData.name} onChange={(e) => handleFormChange("name", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="Enter email" />
+                <Input id="email" type="email" placeholder="Enter email" value={formData.email} onChange={(e) => handleFormChange("email", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" placeholder="Enter phone number" />
+                <Input id="phone" placeholder="Enter phone number" value={formData.phone} onChange={(e) => handleFormChange("phone", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>
-                <Input id="address" placeholder="Enter address" />
+                <Input id="address" placeholder="Enter address" value={formData.address} onChange={(e) => handleFormChange("address", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="pgsManaged">PGs Managed</Label>
-                <Input id="pgsManaged" placeholder="Enter PG names (comma separated)" />
+                <Input id="pgsManaged" placeholder="Enter PG names (comma separated)" value={formData.pgsManaged} onChange={(e) => handleFormChange("pgsManaged", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="guestsManaged">Guests Managed</Label>
-                <Input id="guestsManaged" type="number" placeholder="Enter number of guests" />
+                <Input id="guestsManaged" type="number" placeholder="Enter number of guests" value={formData.guestsManaged} onChange={(e) => handleFormChange("guestsManaged", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="experience">Experience</Label>
-                <Input id="experience" placeholder="e.g., 3 years" />
+                <Input id="experience" placeholder="e.g., 3 years" value={formData.experience} onChange={(e) => handleFormChange("experience", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="joinDate">Join Date</Label>
-                <Input id="joinDate" placeholder="e.g., Feb 2024" />
+                <Input id="joinDate" placeholder="e.g., Feb 2024" value={formData.joinDate} onChange={(e) => handleFormChange("joinDate", e.target.value)} />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Input id="status" placeholder="active/inactive" />
+              <Input id="status" placeholder="active/inactive" value={formData.status} onChange={(e) => handleFormChange("status", e.target.value)} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setAddDialogOpen(false)}>Add Manager</Button>
+            <Button onClick={handleSubmit}>Add Manager</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

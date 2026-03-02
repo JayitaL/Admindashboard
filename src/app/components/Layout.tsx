@@ -12,10 +12,12 @@ import {
   ChevronDown,
   ChevronRight,
   Menu,
-  X
+  X,
+  Database
 } from "lucide-react";
 import { useState } from "react";
 import rufrentLogo from "figma:asset/33ec04c21ea655fdb9574bd0a62d6cd455f16db6.png";
+import { useTables } from "../contexts/TablesContext";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -29,7 +31,8 @@ const navItems = [
       { path: "/tables/owners", label: "Owners" },
       { path: "/tables/managers", label: "Managers" },
       { path: "/tables/guests", label: "Guests" },
-      { path: "/tables/pgs", label: "PGs" },
+      { path: "/tables/staff", label: "Staff" },
+      { path: "/tables/vendors", label: "Vendors" },
     ]
   },
   { path: "/add-tables", label: "Add Tables", icon: Plus },
@@ -41,7 +44,9 @@ const navItems = [
 
 export function Layout() {
   const location = useLocation();
+  const { tables } = useTables();
   const [tablesOpen, setTablesOpen] = useState(location.pathname.startsWith("/tables"));
+  const [customTablesOpen, setCustomTablesOpen] = useState(location.pathname.startsWith("/custom-table"));
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -151,6 +156,52 @@ export function Layout() {
                 </li>
               );
             })}
+
+            {/* Custom Tables Section */}
+            {tables.length > 0 && (
+              <li>
+                <button
+                  onClick={() => setCustomTablesOpen(!customTablesOpen)}
+                  className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    location.pathname.startsWith("/custom-table")
+                      ? "bg-blue-700 text-white"
+                      : "text-blue-100 hover:bg-blue-800"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Database className="w-5 h-5" />
+                    <span className="font-medium">Custom Tables</span>
+                  </div>
+                  {customTablesOpen ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
+                </button>
+                {customTablesOpen && (
+                  <ul className="mt-1 ml-4 space-y-1">
+                    {tables.map((table) => {
+                      const isSubActive = location.pathname === `/custom-table/${table.id}`;
+                      return (
+                        <li key={table.id}>
+                          <Link
+                            to={`/custom-table/${table.id}`}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+                              isSubActive
+                                ? "bg-blue-700 text-white"
+                                : "text-blue-100 hover:bg-blue-800"
+                            }`}
+                          >
+                            {table.tableName}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </li>
+            )}
           </ul>
         </nav>
       </aside>

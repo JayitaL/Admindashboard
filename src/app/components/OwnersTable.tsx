@@ -1,12 +1,24 @@
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Building2, Mail, Phone, MapPin, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { useState } from "react";
 
-const owners = [
+interface Owner {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  pgsOwned: string[];
+  totalRooms: number;
+  joinDate: string;
+  status: string;
+}
+
+const initialOwners: Owner[] = [
   {
     id: 1,
     name: "Rajesh Kumar",
@@ -54,8 +66,19 @@ const owners = [
 ];
 
 export function OwnersTable() {
+  const [owners, setOwners] = useState<Owner[]>(initialOwners);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    pgsOwned: "",
+    totalRooms: "",
+    joinDate: "",
+    status: "",
+  });
 
   const handleToggleRow = (ownerId: number) => {
     setExpandedRows((prev) =>
@@ -67,6 +90,42 @@ export function OwnersTable() {
 
   const handleAddOwner = () => {
     setAddDialogOpen(true);
+  };
+
+  const handleFormChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (!formData.name || !formData.email || !formData.phone) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const newOwner: Owner = {
+      id: owners.length > 0 ? Math.max(...owners.map(o => o.id)) + 1 : 1,
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address || "N/A",
+      pgsOwned: formData.pgsOwned ? formData.pgsOwned.split(",").map(pg => pg.trim()) : [],
+      totalRooms: parseInt(formData.totalRooms) || 0,
+      joinDate: formData.joinDate || new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      status: formData.status || "active",
+    };
+
+    setOwners((prev) => [...prev, newOwner]);
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      pgsOwned: "",
+      totalRooms: "",
+      joinDate: "",
+      status: "",
+    });
+    setAddDialogOpen(false);
   };
 
   return (
@@ -96,7 +155,7 @@ export function OwnersTable() {
               <tbody>
                 {owners.map((owner) => (
                   <>
-                    <tr key={owner.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr key={`owner-${owner.id}`} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-4 px-4">
                         <button
                           onClick={() => handleToggleRow(owner.id)}
@@ -216,41 +275,41 @@ export function OwnersTable() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="Enter name" />
+                <Input id="name" placeholder="Enter name" value={formData.name} onChange={(e) => handleFormChange("name", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="Enter email" />
+                <Input id="email" type="email" placeholder="Enter email" value={formData.email} onChange={(e) => handleFormChange("email", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" placeholder="Enter phone number" />
+                <Input id="phone" placeholder="Enter phone number" value={formData.phone} onChange={(e) => handleFormChange("phone", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>
-                <Input id="address" placeholder="Enter address" />
+                <Input id="address" placeholder="Enter address" value={formData.address} onChange={(e) => handleFormChange("address", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="pgsOwned">PGs Owned</Label>
-                <Input id="pgsOwned" placeholder="Enter PG names (comma separated)" />
+                <Input id="pgsOwned" placeholder="Enter PG names (comma separated)" value={formData.pgsOwned} onChange={(e) => handleFormChange("pgsOwned", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="totalRooms">Total Rooms</Label>
-                <Input id="totalRooms" type="number" placeholder="Enter total rooms" />
+                <Input id="totalRooms" type="number" placeholder="Enter total rooms" value={formData.totalRooms} onChange={(e) => handleFormChange("totalRooms", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="joinDate">Join Date</Label>
-                <Input id="joinDate" placeholder="e.g., Jan 2024" />
+                <Input id="joinDate" placeholder="e.g., Jan 2024" value={formData.joinDate} onChange={(e) => handleFormChange("joinDate", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
-                <Input id="status" placeholder="active/inactive" />
+                <Input id="status" placeholder="active/inactive" value={formData.status} onChange={(e) => handleFormChange("status", e.target.value)} />
               </div>
             </div>
           </div>
@@ -258,7 +317,7 @@ export function OwnersTable() {
             <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setAddDialogOpen(false)}>Add Owner</Button>
+            <Button onClick={handleSubmit}>Add Owner</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

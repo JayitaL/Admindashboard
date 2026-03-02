@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { Building2, MapPin, Users, Plus, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Video } from "lucide-react";
+import { Building2, MapPin, Users, Plus, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Video, Edit, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -90,11 +90,13 @@ const initialPgsData: PGData[] = [
 export function PGsTable() {
   const [pgsData, setPgsData] = useState<PGData[]>(initialPgsData);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
   const [selectedPgId, setSelectedPgId] = useState<number | null>(null);
   const [tempImages, setTempImages] = useState<File[]>([]);
   const [tempVideos, setTempVideos] = useState<File[]>([]);
+  const [selectedPgIds, setSelectedPgIds] = useState<number[]>([]);
 
   const handleToggleRow = (pgId: number) => {
     setExpandedRows((prev) =>
@@ -106,6 +108,40 @@ export function PGsTable() {
 
   const handleAddPG = () => {
     setAddDialogOpen(true);
+  };
+
+  const handleEditSelected = () => {
+    if (selectedPgIds.length === 1) {
+      setSelectedPgId(selectedPgIds[0]);
+      setEditDialogOpen(true);
+    } else {
+      alert("Please select exactly one PG to edit");
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedPgIds.length === 0) {
+      alert("Please select at least one PG to delete");
+      return;
+    }
+    if (confirm(`Are you sure you want to delete ${selectedPgIds.length} PG(s)?`)) {
+      setPgsData(pgsData.filter(pg => !selectedPgIds.includes(pg.id)));
+      setSelectedPgIds([]);
+    }
+  };
+
+  const toggleSelectPg = (pgId: number) => {
+    setSelectedPgIds(prev =>
+      prev.includes(pgId) ? prev.filter(id => id !== pgId) : [...prev, pgId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedPgIds.length === pgsData.length) {
+      setSelectedPgIds([]);
+    } else {
+      setSelectedPgIds(pgsData.map(pg => pg.id));
+    }
   };
 
   const openMediaDialog = (pgId: number) => {
@@ -179,13 +215,47 @@ export function PGsTable() {
 
       <Card className="border-gray-200">
         <CardHeader>
-          <CardTitle>All PGs</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>All PGs</CardTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleAddPG}
+                className="flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add New PG
+              </Button>
+              <Button
+                onClick={handleEditSelected}
+                className="flex items-center gap-2"
+                disabled={selectedPgIds.length !== 1}
+              >
+                <Edit className="w-4 h-4" />
+                Edit Selected
+              </Button>
+              <Button
+                onClick={handleDeleteSelected}
+                className="flex items-center gap-2"
+                disabled={selectedPgIds.length === 0}
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Selected
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={selectedPgIds.length === pgsData.length}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Name</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Location</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Owner</th>
@@ -199,6 +269,13 @@ export function PGsTable() {
                 {pgsData.map((pg) => (
                   <>
                     <tr key={pg.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-4 px-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedPgIds.includes(pg.id)}
+                          onChange={() => toggleSelectPg(pg.id)}
+                        />
+                      </td>
                       <td className="py-4 px-4">
                         <button
                           onClick={() => handleToggleRow(pg.id)}
@@ -262,7 +339,7 @@ export function PGsTable() {
                     {/* Expanded Details Row */}
                     {expandedRows.includes(pg.id) && (
                       <tr className="bg-blue-50/30 border-b border-gray-100">
-                        <td colSpan={7} className="py-4 px-4">
+                        <td colSpan={8} className="py-4 px-4">
                           <div className="max-w-4xl">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Details</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -305,18 +382,6 @@ export function PGsTable() {
                     )}
                   </>
                 ))}
-                {/* Add new row */}
-                <tr className="border-b border-gray-100 bg-blue-50/50 hover:bg-blue-50">
-                  <td colSpan={7} className="py-4 px-4">
-                    <button
-                      onClick={handleAddPG}
-                      className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium w-full"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Add New PG</span>
-                    </button>
-                  </td>
-                </tr>
               </tbody>
             </table>
           </div>
@@ -479,6 +544,60 @@ export function PGsTable() {
               Cancel
             </Button>
             <Button onClick={() => setAddDialogOpen(false)}>Add PG</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit PG Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit PG</DialogTitle>
+            <DialogDescription>
+              Update the details of the selected PG property.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="pg-name">PG Name</Label>
+                <Input id="pg-name" placeholder="Enter PG name" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input id="location" placeholder="Enter location" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="owner">Owner</Label>
+                <Input id="owner" placeholder="Enter owner name" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="manager">Manager</Label>
+                <Input id="manager" placeholder="Enter manager name" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="total-rooms">Total Rooms</Label>
+                <Input id="total-rooms" type="number" placeholder="Enter total rooms" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="monthly-rent">Monthly Rent</Label>
+                <Input id="monthly-rent" placeholder="e.g., ₹8,000" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="amenities">Amenities</Label>
+              <Input id="amenities" placeholder="Enter amenities (comma separated)" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => setEditDialogOpen(false)}>Update PG</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

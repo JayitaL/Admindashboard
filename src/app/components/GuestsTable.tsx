@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -5,9 +6,22 @@ import { Mail, Phone, Building2, Calendar, AlertCircle, Plus, ChevronDown, Chevr
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { useState } from "react";
 
-const guests = [
+interface Guest {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  pg: string;
+  room: string;
+  joinDate: string;
+  monthlyRent: string;
+  guestStatus: string;
+  serviceTickets: number;
+  emergencyContact: string;
+}
+
+const initialGuests: Guest[] = [
   {
     id: 1,
     name: "Rahul Sharma",
@@ -89,8 +103,21 @@ const guests = [
 ];
 
 export function GuestsTable() {
+  const [guests, setGuests] = useState<Guest[]>(initialGuests);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    emergencyContact: "",
+    pg: "",
+    room: "",
+    joinDate: "",
+    monthlyRent: "",
+    guestStatus: "",
+    serviceTickets: "",
+  });
 
   const handleToggleRow = (guestId: number) => {
     setExpandedRows((prev) =>
@@ -102,6 +129,46 @@ export function GuestsTable() {
 
   const handleAddGuest = () => {
     setAddDialogOpen(true);
+  };
+
+  const handleFormChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (!formData.name || !formData.email || !formData.phone) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const newGuest: Guest = {
+      id: guests.length > 0 ? Math.max(...guests.map(g => g.id)) + 1 : 1,
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      emergencyContact: formData.emergencyContact || "N/A",
+      pg: formData.pg || "N/A",
+      room: formData.room || "N/A",
+      joinDate: formData.joinDate || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      monthlyRent: formData.monthlyRent || "₹0",
+      guestStatus: formData.guestStatus || "active",
+      serviceTickets: parseInt(formData.serviceTickets) || 0,
+    };
+
+    setGuests((prev) => [...prev, newGuest]);
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      emergencyContact: "",
+      pg: "",
+      room: "",
+      joinDate: "",
+      monthlyRent: "",
+      guestStatus: "",
+      serviceTickets: "",
+    });
+    setAddDialogOpen(false);
   };
 
   return (
@@ -132,7 +199,7 @@ export function GuestsTable() {
               <tbody>
                 {guests.map((guest) => (
                   <>
-                    <tr key={guest.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr key={`guest-${guest.id}`} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-4 px-4">
                         <button
                           onClick={() => handleToggleRow(guest.id)}
@@ -295,51 +362,51 @@ export function GuestsTable() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="Enter name" />
+                <Input id="name" placeholder="Enter name" value={formData.name} onChange={(e) => handleFormChange("name", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="Enter email" />
+                <Input id="email" type="email" placeholder="Enter email" value={formData.email} onChange={(e) => handleFormChange("email", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" placeholder="Enter phone number" />
+                <Input id="phone" placeholder="Enter phone number" value={formData.phone} onChange={(e) => handleFormChange("phone", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="emergencyContact">Emergency Contact</Label>
-                <Input id="emergencyContact" placeholder="Enter emergency contact" />
+                <Input id="emergencyContact" placeholder="Enter emergency contact" value={formData.emergencyContact} onChange={(e) => handleFormChange("emergencyContact", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="pg">PG</Label>
-                <Input id="pg" placeholder="Enter PG name" />
+                <Input id="pg" placeholder="Enter PG name" value={formData.pg} onChange={(e) => handleFormChange("pg", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="room">Room</Label>
-                <Input id="room" placeholder="Enter room number" />
+                <Input id="room" placeholder="Enter room number" value={formData.room} onChange={(e) => handleFormChange("room", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="joinDate">Join Date</Label>
-                <Input id="joinDate" placeholder="e.g., Jan 15, 2026" />
+                <Input id="joinDate" placeholder="e.g., Jan 15, 2026" value={formData.joinDate} onChange={(e) => handleFormChange("joinDate", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="monthlyRent">Monthly Rent</Label>
-                <Input id="monthlyRent" placeholder="e.g., ₹12,000" />
+                <Input id="monthlyRent" placeholder="e.g., ₹12,000" value={formData.monthlyRent} onChange={(e) => handleFormChange("monthlyRent", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="guestStatus">Guest Status</Label>
-                <Input id="guestStatus" placeholder="active/dormant" />
+                <Input id="guestStatus" placeholder="active/dormant" value={formData.guestStatus} onChange={(e) => handleFormChange("guestStatus", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="serviceTickets">Service Tickets</Label>
-                <Input id="serviceTickets" type="number" placeholder="Enter number" defaultValue="0" />
+                <Input id="serviceTickets" type="number" placeholder="Enter number" defaultValue="0" value={formData.serviceTickets} onChange={(e) => handleFormChange("serviceTickets", e.target.value)} />
               </div>
             </div>
           </div>
@@ -347,7 +414,7 @@ export function GuestsTable() {
             <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setAddDialogOpen(false)}>Add Guest</Button>
+            <Button onClick={handleSubmit}>Add Guest</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

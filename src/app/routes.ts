@@ -7,13 +7,15 @@ import { TablesPage } from "./components/TablesPage";
 import { OwnersTable } from "./components/OwnersTable";
 import { ManagersTable } from "./components/ManagersTable";
 import { GuestsTable } from "./components/GuestsTable";
-import { PGsTable } from "./components/PGsTable";
+import { StaffTable } from "./components/StaffTable";
+import { VendorTable } from "./components/VendorTable";
 import { AddTablesPage } from "./components/AddTablesPage";
 import { AddAmenitiesPage } from "./components/AddAmenitiesPage";
 import { GuestsPage } from "./components/GuestsPage";
 import { PaymentsPage } from "./components/PaymentsPage";
 import { ReportsPage } from "./components/ReportsPage";
 import { SettingsPage } from "./components/SettingsPage";
+import { DynamicTableWrapper } from "./components/DynamicTableWrapper";
 
 export const router = createBrowserRouter([
   {
@@ -28,12 +30,14 @@ export const router = createBrowserRouter([
       { path: "tables/owners", Component: OwnersTable },
       { path: "tables/managers", Component: ManagersTable },
       { path: "tables/guests", Component: GuestsTable },
-      { path: "tables/pgs", Component: PGsTable },
+      { path: "tables/staff", Component: StaffTable },
+      { path: "tables/vendors", Component: VendorTable },
       { path: "add-tables", Component: AddTablesPage },
       { path: "add-amenities", Component: AddAmenitiesPage },
       { path: "payments", Component: PaymentsPage },
       { path: "reports", Component: ReportsPage },
       { path: "settings", Component: SettingsPage },
+      { path: "custom-table/:tableId", Component: DynamicTableWrapper },
     ],
   },
 ]);
