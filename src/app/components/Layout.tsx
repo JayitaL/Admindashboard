@@ -16,7 +16,7 @@ import {
   Database
 } from "lucide-react";
 import { useState } from "react";
-import rufrentLogo from "figma:asset/33ec04c21ea655fdb9574bd0a62d6cd455f16db6.png";
+import rufrentLogo from "@/assets/logo.png";
 import { useTables } from "../contexts/TablesContext";
 
 const navItems = [
