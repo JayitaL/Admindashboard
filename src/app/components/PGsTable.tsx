@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { Building2, MapPin, Users, Plus, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Video, Edit, Trash2 } from "lucide-react";
+import { Building2, MapPin, Users, Plus, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Video, Edit, Trash2, Eye } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -92,6 +92,7 @@ export function PGsTable() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
+  const [viewMediaDialogOpen, setViewMediaDialogOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
   const [selectedPgId, setSelectedPgId] = useState<number | null>(null);
   const [tempImages, setTempImages] = useState<File[]>([]);
@@ -154,8 +155,25 @@ export function PGsTable() {
     setMediaDialogOpen(true);
   };
 
+  const openViewMediaDialog = (pgId: number) => {
+    setSelectedPgId(pgId);
+    const pg = pgsData.find(p => p.id === pgId);
+    if (pg) {
+      setTempImages(pg.media.images);
+      setTempVideos(pg.media.videos);
+    }
+    setViewMediaDialogOpen(true);
+  };
+
   const closeMediaDialog = () => {
     setMediaDialogOpen(false);
+    setTempImages([]);
+    setTempVideos([]);
+    setSelectedPgId(null);
+  };
+
+  const closeViewMediaDialog = () => {
+    setViewMediaDialogOpen(false);
     setTempImages([]);
     setTempVideos([]);
     setSelectedPgId(null);
@@ -220,26 +238,26 @@ export function PGsTable() {
             <div className="flex items-center gap-2">
               <Button
                 onClick={handleAddPG}
-                className="flex items-center gap-2"
+                size="icon"
+                title="Add New PG"
               >
                 <Plus className="w-4 h-4" />
-                Add New PG
               </Button>
               <Button
                 onClick={handleEditSelected}
-                className="flex items-center gap-2"
+                size="icon"
+                title="Edit Selected"
                 disabled={selectedPgIds.length !== 1}
               >
                 <Edit className="w-4 h-4" />
-                Edit Selected
               </Button>
               <Button
                 onClick={handleDeleteSelected}
-                className="flex items-center gap-2"
+                size="icon"
+                title="Delete Selected"
                 disabled={selectedPgIds.length === 0}
               >
                 <Trash2 className="w-4 h-4" />
-                Delete Selected
               </Button>
             </div>
           </div>
@@ -316,6 +334,15 @@ export function PGsTable() {
                           >
                             <Upload className="w-4 h-4" />
                             Upload
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openViewMediaDialog(pg.id)}
+                            className="flex items-center gap-2 bg-blue-50 border-blue-200 hover:bg-blue-100"
+                          >
+                            <Eye className="w-4 h-4" />
+                            View
                           </Button>
                           {(pg.media.images.length > 0 || pg.media.videos.length > 0) && (
                             <div className="text-xs text-gray-600 space-y-0.5">
@@ -489,6 +516,94 @@ export function PGsTable() {
             </Button>
             <Button onClick={handleMediaUpload}>
               Upload Media
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Media View Dialog */}
+      <Dialog open={viewMediaDialogOpen} onOpenChange={setViewMediaDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>View Media</DialogTitle>
+            <DialogDescription>
+              View the uploaded images and videos for the PG property.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {tempImages.length === 0 && tempVideos.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="flex justify-center mb-4">
+                  <div className="p-4 bg-gray-100 rounded-full">
+                    <ImageIcon className="w-12 h-12 text-gray-400" />
+                  </div>
+                </div>
+                <p className="text-gray-600">No media uploaded for this PG yet.</p>
+              </div>
+            ) : (
+              <>
+                {/* Images Section */}
+                {tempImages.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Images (Max 5)</Label>
+                      <span className="text-sm text-gray-600">{tempImages.length}/5</span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {tempImages.map((file, index) => (
+                        <div key={index} className="relative border rounded-lg p-2">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-32 object-cover rounded"
+                          />
+                          <button
+                            onClick={() => removeImage(index)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                          <p className="text-xs text-gray-600 mt-1 truncate">{file.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Videos Section */}
+                {tempVideos.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Videos (Max 2)</Label>
+                      <span className="text-sm text-gray-600">{tempVideos.length}/2</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {tempVideos.map((file, index) => (
+                        <div key={index} className="relative border rounded-lg p-4">
+                          <div className="flex items-center gap-2">
+                            <Video className="w-8 h-8 text-blue-600" />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium truncate">{file.name}</p>
+                              <p className="text-xs text-gray-600">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            </div>
+                            <button
+                              onClick={() => removeVideo(index)}
+                              className="bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeViewMediaDialog}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

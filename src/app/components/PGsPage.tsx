@@ -137,6 +137,15 @@ export function PGsPage() {
   const [tempImages, setTempImages] = useState<File[]>([]);
   const [tempVideos, setTempVideos] = useState<File[]>([]);
   const [selectedPgIds, setSelectedPgIds] = useState<number[]>([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    location: "",
+    owner: "",
+    manager: "",
+    totalRooms: "",
+    monthlyRent: "",
+    amenities: "",
+  });
 
   const handleToggleRow = (pgId: number) => {
     setExpandedRows((prev) =>
@@ -147,27 +156,137 @@ export function PGsPage() {
   };
 
   const handleAddPG = () => {
+    setFormData({
+      name: "",
+      location: "",
+      owner: "",
+      manager: "",
+      totalRooms: "",
+      monthlyRent: "",
+      amenities: "",
+    });
     setAddDialogOpen(true);
   };
 
   const handleEditSelected = () => {
     if (selectedPgIds.length === 1) {
-      setSelectedPgId(selectedPgIds[0]);
-      setEditDialogOpen(true);
+      const pg = pgsData.find(p => p.id === selectedPgIds[0]);
+      if (pg) {
+        setSelectedPgId(selectedPgIds[0]);
+        setFormData({
+          name: pg.name,
+          location: pg.location,
+          owner: pg.owner,
+          manager: pg.manager,
+          totalRooms: pg.totalRooms.toString(),
+          monthlyRent: pg.monthlyRent,
+          amenities: pg.amenities.join(", "),
+        });
+        setEditDialogOpen(true);
+      }
+    } else if (selectedPgIds.length === 0) {
+      alert("Please select a PG to edit");
     } else {
-      alert("Please select exactly one PG to edit");
+      alert("Please select only one PG to edit");
     }
+  };
+
+  const handleFormChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmitAddPG = () => {
+    if (!formData.name || !formData.location || !formData.owner || !formData.manager || !formData.totalRooms || !formData.monthlyRent) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const newPG: PGData = {
+      id: pgsData.length > 0 ? Math.max(...pgsData.map(p => p.id)) + 1 : 1,
+      name: formData.name,
+      location: formData.location,
+      owner: formData.owner,
+      manager: formData.manager,
+      totalRooms: parseInt(formData.totalRooms),
+      occupiedRooms: 0,
+      monthlyRent: formData.monthlyRent,
+      amenities: formData.amenities ? formData.amenities.split(",").map(a => a.trim()) : [],
+      media: {
+        images: [],
+        videos: []
+      },
+      status: 'active'
+    };
+
+    setPgsData(prev => [...prev, newPG]);
+    setAddDialogOpen(false);
+    setFormData({
+      name: "",
+      location: "",
+      owner: "",
+      manager: "",
+      totalRooms: "",
+      monthlyRent: "",
+      amenities: "",
+    });
+  };
+
+  const handleSubmitEditPG = () => {
+    if (!formData.name || !formData.location || !formData.owner || !formData.manager || !formData.totalRooms || !formData.monthlyRent) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    if (selectedPgId !== null) {
+      setPgsData(prev => prev.map(pg => 
+        pg.id === selectedPgId 
+          ? {
+              ...pg,
+              name: formData.name,
+              location: formData.location,
+              owner: formData.owner,
+              manager: formData.manager,
+              totalRooms: parseInt(formData.totalRooms),
+              monthlyRent: formData.monthlyRent,
+              amenities: formData.amenities ? formData.amenities.split(",").map(a => a.trim()) : [],
+            }
+          : pg
+      ));
+      setEditDialogOpen(false);
+      setSelectedPgId(null);
+      setSelectedPgIds([]);
+      setFormData({
+        name: "",
+        location: "",
+        owner: "",
+        manager: "",
+        totalRooms: "",
+        monthlyRent: "",
+        amenities: "",
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditDialogOpen(false);
+    setSelectedPgId(null);
+    setFormData({
+      name: "",
+      location: "",
+      owner: "",
+      manager: "",
+      totalRooms: "",
+      monthlyRent: "",
+      amenities: "",
+    });
   };
 
   const handleDeleteSelected = () => {
     if (selectedPgIds.length === 0) {
-      alert("Please select at least one PG to delete");
       return;
     }
-    if (confirm(`Are you sure you want to delete ${selectedPgIds.length} PG(s)?`)) {
-      setPgsData(pgsData.filter(pg => !selectedPgIds.includes(pg.id)));
-      setSelectedPgIds([]);
-    }
+    setPgsData(pgsData.filter(pg => !selectedPgIds.includes(pg.id)));
+    setSelectedPgIds([]);
   };
 
   const toggleSelectPg = (pgId: number) => {
@@ -334,26 +453,26 @@ export function PGsPage() {
             <div className="flex items-center gap-2">
               <Button
                 onClick={handleAddPG}
-                className="flex items-center gap-2"
+                size="icon"
+                title="Add New PG"
               >
                 <Plus className="w-4 h-4" />
-                Add New PG
               </Button>
               <Button
                 onClick={handleEditSelected}
-                className="flex items-center gap-2"
+                size="icon"
+                title="Edit Selected"
                 disabled={selectedPgIds.length !== 1}
               >
                 <Edit className="w-4 h-4" />
-                Edit Selected
               </Button>
               <Button
                 onClick={handleDeleteSelected}
-                className="flex items-center gap-2"
+                size="icon"
+                title="Delete Selected"
                 disabled={selectedPgIds.length === 0}
               >
                 <Trash2 className="w-4 h-4" />
-                Delete Selected
               </Button>
             </div>
           </div>
@@ -383,9 +502,8 @@ export function PGsPage() {
                 </tr>
               </thead>
               <tbody>
-                {pgsData.map((pg) => (
-                  <>
-                    <tr key={`pg-${pg.id}`} className="border-b border-gray-100 hover:bg-gray-50">
+                {pgsData.map((pg) => [
+                  <tr key={`pg-${pg.id}`} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-4 px-4">
                         <input
                           type="checkbox"
@@ -453,7 +571,7 @@ export function PGsPage() {
                             <Upload className="w-4 h-4" />
                             Upload
                           </Button>
-                          {(pg.media.images.length > 0 || pg.media.videos.length > 0) && (
+                          {(pg.media.images.length > 0 || pg.media.videos.length > 0) ? (
                             <>
                               <Button
                                 variant="outline"
@@ -479,13 +597,23 @@ export function PGsPage() {
                                 )}
                               </div>
                             </>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openViewMediaDialog(pg.id)}
+                              className="flex items-center gap-2 bg-gray-50 border-gray-200 hover:bg-gray-100"
+                            >
+                              <Eye className="w-4 h-4" />
+                              View
+                            </Button>
                           )}
                         </div>
                       </td>
-                    </tr>
-                    {/* Expanded Details Row */}
-                    {expandedRows.includes(pg.id) && (
-                      <tr className="bg-blue-50/30 border-b border-gray-100">
+                    </tr>,
+                    // Expanded Details Row
+                    expandedRows.includes(pg.id) && (
+                      <tr key={`pg-expanded-${pg.id}`} className="bg-blue-50/30 border-b border-gray-100">
                         <td colSpan={9} className="py-4 px-4">
                           <div className="max-w-4xl">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Details</h3>
@@ -547,9 +675,8 @@ export function PGsPage() {
                           </div>
                         </td>
                       </tr>
-                    )}
-                  </>
-                ))}
+                    )
+                  ])}
               </tbody>
             </table>
           </div>
@@ -766,43 +893,79 @@ export function PGsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="pg-name">PG Name</Label>
-                <Input id="pg-name" placeholder="Enter PG name" />
+                <Input
+                  id="pg-name"
+                  placeholder="Enter PG name"
+                  value={formData.name}
+                  onChange={(e) => handleFormChange("name", e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="location">Location</Label>
-                <Input id="location" placeholder="Enter location" />
+                <Input
+                  id="location"
+                  placeholder="Enter location"
+                  value={formData.location}
+                  onChange={(e) => handleFormChange("location", e.target.value)}
+                />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="owner">Owner</Label>
-                <Input id="owner" placeholder="Enter owner name" />
+                <Input
+                  id="owner"
+                  placeholder="Enter owner name"
+                  value={formData.owner}
+                  onChange={(e) => handleFormChange("owner", e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="manager">Manager</Label>
-                <Input id="manager" placeholder="Enter manager name" />
+                <Input
+                  id="manager"
+                  placeholder="Enter manager name"
+                  value={formData.manager}
+                  onChange={(e) => handleFormChange("manager", e.target.value)}
+                />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="total-rooms">Total Rooms</Label>
-                <Input id="total-rooms" type="number" placeholder="Enter total rooms" />
+                <Input
+                  id="total-rooms"
+                  type="number"
+                  placeholder="Enter total rooms"
+                  value={formData.totalRooms}
+                  onChange={(e) => handleFormChange("totalRooms", e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="monthly-rent">Monthly Rent</Label>
-                <Input id="monthly-rent" placeholder="e.g., ₹8,000" />
+                <Input
+                  id="monthly-rent"
+                  placeholder="e.g., ₹8,000"
+                  value={formData.monthlyRent}
+                  onChange={(e) => handleFormChange("monthlyRent", e.target.value)}
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="amenities">Amenities</Label>
-              <Input id="amenities" placeholder="Enter amenities (comma separated)" />
+              <Input
+                id="amenities"
+                placeholder="Enter amenities (comma separated)"
+                value={formData.amenities}
+                onChange={(e) => handleFormChange("amenities", e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setAddDialogOpen(false)}>Add PG</Button>
+            <Button onClick={handleSubmitAddPG}>Add PG</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -820,43 +983,79 @@ export function PGsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="pg-name">PG Name</Label>
-                <Input id="pg-name" placeholder="Enter PG name" />
+                <Input
+                  id="pg-name"
+                  placeholder="Enter PG name"
+                  value={formData.name}
+                  onChange={(e) => handleFormChange("name", e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="location">Location</Label>
-                <Input id="location" placeholder="Enter location" />
+                <Input
+                  id="location"
+                  placeholder="Enter location"
+                  value={formData.location}
+                  onChange={(e) => handleFormChange("location", e.target.value)}
+                />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="owner">Owner</Label>
-                <Input id="owner" placeholder="Enter owner name" />
+                <Input
+                  id="owner"
+                  placeholder="Enter owner name"
+                  value={formData.owner}
+                  onChange={(e) => handleFormChange("owner", e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="manager">Manager</Label>
-                <Input id="manager" placeholder="Enter manager name" />
+                <Input
+                  id="manager"
+                  placeholder="Enter manager name"
+                  value={formData.manager}
+                  onChange={(e) => handleFormChange("manager", e.target.value)}
+                />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="total-rooms">Total Rooms</Label>
-                <Input id="total-rooms" type="number" placeholder="Enter total rooms" />
+                <Input
+                  id="total-rooms"
+                  type="number"
+                  placeholder="Enter total rooms"
+                  value={formData.totalRooms}
+                  onChange={(e) => handleFormChange("totalRooms", e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="monthly-rent">Monthly Rent</Label>
-                <Input id="monthly-rent" placeholder="e.g., ₹8,000" />
+                <Input
+                  id="monthly-rent"
+                  placeholder="e.g., ₹8,000"
+                  value={formData.monthlyRent}
+                  onChange={(e) => handleFormChange("monthlyRent", e.target.value)}
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="amenities">Amenities</Label>
-              <Input id="amenities" placeholder="Enter amenities (comma separated)" />
+              <Input
+                id="amenities"
+                placeholder="Enter amenities (comma separated)"
+                value={formData.amenities}
+                onChange={(e) => handleFormChange("amenities", e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+            <Button variant="outline" onClick={handleCancelEdit}>
               Cancel
             </Button>
-            <Button onClick={() => setEditDialogOpen(false)}>Update PG</Button>
+            <Button onClick={handleSubmitEditPG}>Update PG</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

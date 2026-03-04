@@ -145,7 +145,16 @@ export function ManagersTable() {
 
       <Card className="border-gray-200">
         <CardHeader>
-          <CardTitle>All Managers</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>All Managers</CardTitle>
+            <Button
+              onClick={handleAddManager}
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add New Manager
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -162,121 +171,107 @@ export function ManagersTable() {
                 </tr>
               </thead>
               <tbody>
-                {managers.map((manager) => (
-                  <>
-                    <tr key={`manager-${manager.id}`} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-4">
-                        <button
-                          onClick={() => handleToggleRow(manager.id)}
-                          className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 text-left"
-                        >
-                          {expandedRows.includes(manager.id) ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
-                          {manager.name}
-                        </button>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Mail className="w-3 h-3" />
-                            <span>{manager.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Phone className="w-3 h-3" />
-                            <span>{manager.phone}</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
+                {managers.map((manager) => [
+                  <tr key={`manager-${manager.id}`} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-4">
+                      <button
+                        onClick={() => handleToggleRow(manager.id)}
+                        className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 text-left"
+                      >
+                        {expandedRows.includes(manager.id) ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                        {manager.name}
+                      </button>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="space-y-1">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <MapPin className="w-3 h-3" />
-                          <span>{manager.address}</span>
+                          <Mail className="w-3 h-3" />
+                          <span>{manager.email}</span>
                         </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="space-y-1">
-                          {manager.pgsManaged.map((pg, idx) => (
-                            <div key={`pg-${manager.id}-${idx}`} className="flex items-center gap-2 text-sm text-gray-900">
-                              <Building2 className="w-3 h-3 text-blue-600" />
-                              <span>{pg}</span>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Phone className="w-3 h-3" />
+                          <span>{manager.phone}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <MapPin className="w-3 h-3" />
+                        <span>{manager.address}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="space-y-1">
+                        {manager.pgsManaged.map((pg, idx) => (
+                          <div key={`pg-${manager.id}-${idx}`} className="flex items-center gap-2 text-sm text-gray-900">
+                            <Building2 className="w-3 h-3 text-blue-600" />
+                            <span>{pg}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                        <Users className="w-4 h-4 text-gray-600" />
+                        <span>{manager.guestsManaged}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-gray-600">{manager.experience}</td>
+                    <td className="py-4 px-4 text-gray-600">{manager.joinDate}</td>
+                  </tr>,
+                  // Expanded Details Row
+                  expandedRows.includes(manager.id) && (
+                    <tr className="bg-blue-50/30 border-b border-gray-100">
+                      <td colSpan={7} className="py-4 px-4">
+                        <div className="max-w-4xl">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Details</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Full Name</p>
+                              <p className="text-gray-900">{manager.name}</p>
                             </div>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-2 text-gray-900 font-semibold">
-                          <Users className="w-4 h-4 text-gray-600" />
-                          <span>{manager.guestsManaged}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-gray-600">{manager.experience}</td>
-                      <td className="py-4 px-4 text-gray-600">{manager.joinDate}</td>
-                    </tr>
-                    {/* Expanded Details Row */}
-                    {expandedRows.includes(manager.id) && (
-                      <tr className="bg-blue-50/30 border-b border-gray-100">
-                        <td colSpan={7} className="py-4 px-4">
-                          <div className="max-w-4xl">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Full Name</p>
-                                <p className="text-gray-900">{manager.name}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Email Address</p>
-                                <p className="text-gray-900">{manager.email}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Phone Number</p>
-                                <p className="text-gray-900">{manager.phone}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Current Address</p>
-                                <p className="text-gray-900">{manager.address}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Properties Managed</p>
-                                <p className="text-gray-900">{manager.pgsManaged.join(", ")}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Total Guests</p>
-                                <p className="text-gray-900">{manager.guestsManaged} guests</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Years of Experience</p>
-                                <p className="text-gray-900">{manager.experience}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Joining Date</p>
-                                <p className="text-gray-900">{manager.joinDate}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Account Status</p>
-                                <p className="text-gray-900 capitalize">{manager.status}</p>
-                              </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Email Address</p>
+                              <p className="text-gray-900">{manager.email}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Phone Number</p>
+                              <p className="text-gray-900">{manager.phone}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Current Address</p>
+                              <p className="text-gray-900">{manager.address}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Properties Managed</p>
+                              <p className="text-gray-900">{manager.pgsManaged.join(", ")}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Total Guests</p>
+                              <p className="text-gray-900">{manager.guestsManaged} guests</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Years of Experience</p>
+                              <p className="text-gray-900">{manager.experience}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Joining Date</p>
+                              <p className="text-gray-900">{manager.joinDate}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Account Status</p>
+                              <p className="text-gray-900 capitalize">{manager.status}</p>
                             </div>
                           </div>
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                ))}
-                {/* Add new row */}
-                <tr className="border-b border-gray-100 bg-blue-50/50 hover:bg-blue-50">
-                  <td colSpan={7} className="py-4 px-4">
-                    <button
-                      onClick={handleAddManager}
-                      className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium w-full"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Add New Manager</span>
-                    </button>
-                  </td>
-                </tr>
+                        </div>
+                      </td>
+                    </tr>
+                  ),
+                ])}
               </tbody>
             </table>
           </div>

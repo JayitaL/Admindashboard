@@ -74,6 +74,8 @@ export function VendorTable() {
   const [vendorData, setVendorData] = useState<VendorData[]>(initialVendorData);
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedVendor, setSelectedVendor] = useState<VendorData | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     companyName: "",
@@ -91,6 +93,63 @@ export function VendorTable() {
         ? prev.filter((id) => id !== vendorId)
         : [...prev, vendorId]
     );
+  };
+
+  const handleOpenEditDialog = (vendor: VendorData) => {
+    setSelectedVendor(vendor);
+    setFormData({
+      name: vendor.name,
+      companyName: vendor.companyName,
+      serviceType: vendor.serviceType,
+      phone: vendor.phone,
+      email: vendor.email,
+      address: vendor.address,
+      contractDate: vendor.contractDate,
+      monthlyAmount: vendor.monthlyAmount,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!formData.name || !formData.serviceType || !formData.phone || !formData.email) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    if (selectedVendor) {
+      setVendorData(prev => prev.map(v => 
+        v.id === selectedVendor.id 
+          ? {
+              ...v,
+              name: formData.name,
+              companyName: formData.companyName,
+              serviceType: formData.serviceType,
+              phone: formData.phone,
+              email: formData.email,
+              address: formData.address,
+              contractDate: formData.contractDate,
+              monthlyAmount: formData.monthlyAmount,
+            }
+          : v
+      ));
+      setEditDialogOpen(false);
+      setSelectedVendor(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditDialogOpen(false);
+    setSelectedVendor(null);
+    setFormData({
+      name: "",
+      companyName: "",
+      serviceType: "",
+      phone: "",
+      email: "",
+      address: "",
+      contractDate: "",
+      monthlyAmount: "",
+    });
   };
 
   const handleFormChange = (field: string, value: string) => {
@@ -165,118 +224,116 @@ export function VendorTable() {
                 </tr>
               </thead>
               <tbody>
-                {vendorData.map((vendor) => (
-                  <>
-                    <tr key={`vendor-${vendor.id}`} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-4">
-                        <button
-                          onClick={() => handleToggleRow(vendor.id)}
-                          className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 text-left"
-                        >
-                          {expandedRows.includes(vendor.id) ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
-                          {vendor.name}
-                        </button>
-                      </td>
-                      <td className="py-4 px-4 text-gray-900">{vendor.serviceType}</td>
-                      <td className="py-4 px-4 text-gray-900">{vendor.phone}</td>
-                      <td className="py-4 px-4 text-gray-900">{vendor.email}</td>
-                      <td className="py-4 px-4 text-gray-900 font-semibold">{vendor.monthlyAmount}</td>
-                      <td className="py-4 px-4">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                          vendor.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : vendor.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
-                        }`}>
-                          <span className={`w-2 h-2 rounded-full mr-2 ${
-                            vendor.status === 'active' ? 'bg-green-500' : vendor.status === 'pending'
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                          }`} />
-                          {vendor.status === 'active' ? 'Active' : vendor.status === 'pending'
-                            ? 'Pending'
-                            : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                          <Edit className="w-4 h-4" />
-                          Edit
-                        </Button>
-                      </td>
-                    </tr>
-                    {/* Expanded Details Row */}
-                    {expandedRows.includes(vendor.id) && (
-                      <tr className="bg-blue-50/30 border-b border-gray-100">
-                        <td colSpan={7} className="py-4 px-4">
-                          <div className="max-w-4xl">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Vendor Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Vendor Name</p>
-                                <p className="text-gray-900">{vendor.name}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Company Name</p>
-                                <p className="text-gray-900">{vendor.companyName}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Service Type</p>
-                                <p className="text-gray-900">{vendor.serviceType}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Phone Number</p>
-                                <p className="text-gray-900">{vendor.phone}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Email Address</p>
-                                <p className="text-gray-900">{vendor.email}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Address</p>
-                                <p className="text-gray-900">{vendor.address}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Contract Start Date</p>
-                                <p className="text-gray-900">{vendor.contractDate}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Monthly Amount</p>
-                                <p className="text-gray-900">{vendor.monthlyAmount}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Contract Status</p>
-                                <p className="text-gray-900">
-                                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                    vendor.status === 'active' 
-                                      ? 'bg-green-100 text-green-800' 
-                                      : vendor.status === 'pending'
-                                        ? 'bg-yellow-100 text-yellow-800'
-                                        : 'bg-red-100 text-red-800'
-                                  }`}>
-                                    <span className={`w-2 h-2 rounded-full mr-2 ${
-                                      vendor.status === 'active' ? 'bg-green-500' : vendor.status === 'pending'
-                                        ? 'bg-yellow-500'
-                                        : 'bg-red-500'
-                                    }`} />
-                                    {vendor.status === 'active' ? 'Active' : vendor.status === 'pending'
-                                      ? 'Pending'
-                                      : 'Inactive'}
-                                  </span>
-                                </p>
-                              </div>
+                {vendorData.map((vendor) => [
+                  <tr key={`vendor-${vendor.id}`} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-4">
+                      <button
+                        onClick={() => handleToggleRow(vendor.id)}
+                        className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 text-left"
+                      >
+                        {expandedRows.includes(vendor.id) ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                        {vendor.name}
+                      </button>
+                    </td>
+                    <td className="py-4 px-4 text-gray-900">{vendor.serviceType}</td>
+                    <td className="py-4 px-4 text-gray-900">{vendor.phone}</td>
+                    <td className="py-4 px-4 text-gray-900">{vendor.email}</td>
+                    <td className="py-4 px-4 text-gray-900 font-semibold">{vendor.monthlyAmount}</td>
+                    <td className="py-4 px-4">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                        vendor.status === 'active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : vendor.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                      }`}>
+                        <span className={`w-2 h-2 rounded-full mr-2 ${
+                          vendor.status === 'active' ? 'bg-green-500' : vendor.status === 'pending'
+                            ? 'bg-yellow-500'
+                            : 'bg-red-500'
+                        }`} />
+                        {vendor.status === 'active' ? 'Active' : vendor.status === 'pending'
+                          ? 'Pending'
+                          : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <Button variant="ghost" size="sm" className="flex items-center gap-2" onClick={() => handleOpenEditDialog(vendor)}>
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </Button>
+                    </td>
+                  </tr>,
+                  // Expanded Details Row
+                  expandedRows.includes(vendor.id) && (
+                    <tr className="bg-blue-50/30 border-b border-gray-100">
+                      <td colSpan={7} className="py-4 px-4">
+                        <div className="max-w-4xl">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-4">Vendor Details</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Vendor Name</p>
+                              <p className="text-gray-900">{vendor.name}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Company Name</p>
+                              <p className="text-gray-900">{vendor.companyName}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Service Type</p>
+                              <p className="text-gray-900">{vendor.serviceType}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Phone Number</p>
+                              <p className="text-gray-900">{vendor.phone}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Email Address</p>
+                              <p className="text-gray-900">{vendor.email}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Address</p>
+                              <p className="text-gray-900">{vendor.address}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Contract Start Date</p>
+                              <p className="text-gray-900">{vendor.contractDate}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Monthly Amount</p>
+                              <p className="text-gray-900">{vendor.monthlyAmount}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Contract Status</p>
+                              <p className="text-gray-900">
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                                  vendor.status === 'active' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : vendor.status === 'pending'
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : 'bg-red-100 text-red-800'
+                                }`}>
+                                  <span className={`w-2 h-2 rounded-full mr-2 ${
+                                    vendor.status === 'active' ? 'bg-green-500' : vendor.status === 'pending'
+                                      ? 'bg-yellow-500'
+                                      : 'bg-red-500'
+                                  }`} />
+                                  {vendor.status === 'active' ? 'Active' : vendor.status === 'pending'
+                                    ? 'Pending'
+                                    : 'Inactive'}
+                                </span>
+                              </p>
                             </div>
                           </div>
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ),
+                ])}
               </tbody>
             </table>
           </div>
@@ -337,6 +394,64 @@ export function VendorTable() {
               Cancel
             </Button>
             <Button onClick={handleSubmit}>Add Vendor</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Vendor Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Vendor</DialogTitle>
+            <DialogDescription>
+              Update the details of the vendor or service provider.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="vendor-name">Vendor Name</Label>
+                <Input id="vendor-name" placeholder="Enter vendor name" value={formData.name} onChange={(e) => handleFormChange('name', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="company-name">Company Name</Label>
+                <Input id="company-name" placeholder="Enter company name" value={formData.companyName} onChange={(e) => handleFormChange('companyName', e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="service-type">Service Type</Label>
+                <Input id="service-type" placeholder="Enter service type" value={formData.serviceType} onChange={(e) => handleFormChange('serviceType', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input id="phone" placeholder="Enter phone number" value={formData.phone} onChange={(e) => handleFormChange('phone', e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input id="email" type="email" placeholder="Enter email" value={formData.email} onChange={(e) => handleFormChange('email', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="monthly-amount">Monthly Amount</Label>
+                <Input id="monthly-amount" placeholder="e.g., ₹25,000" value={formData.monthlyAmount} onChange={(e) => handleFormChange('monthlyAmount', e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="address">Address</Label>
+              <Input id="address" placeholder="Enter address" value={formData.address} onChange={(e) => handleFormChange('address', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contract-date">Contract Start Date</Label>
+              <Input id="contract-date" type="date" value={formData.contractDate} onChange={(e) => handleFormChange('contractDate', e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelEdit}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

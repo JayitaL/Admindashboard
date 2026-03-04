@@ -69,6 +69,8 @@ export function StaffTable() {
   const [staffData, setStaffData] = useState<StaffData[]>(initialStaffData);
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     role: "",
@@ -85,6 +87,60 @@ export function StaffTable() {
         ? prev.filter((id) => id !== staffId)
         : [...prev, staffId]
     );
+  };
+
+  const handleOpenEditDialog = (staff: StaffData) => {
+    setSelectedStaff(staff);
+    setFormData({
+      name: staff.name,
+      role: staff.role,
+      phone: staff.phone,
+      email: staff.email,
+      assignedPG: staff.assignedPG,
+      joiningDate: staff.joiningDate,
+      salary: staff.salary,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!formData.name || !formData.role || !formData.phone || !formData.email) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    if (selectedStaff) {
+      setStaffData(prev => prev.map(s => 
+        s.id === selectedStaff.id 
+          ? {
+              ...s,
+              name: formData.name,
+              role: formData.role,
+              phone: formData.phone,
+              email: formData.email,
+              assignedPG: formData.assignedPG,
+              joiningDate: formData.joiningDate,
+              salary: formData.salary,
+            }
+          : s
+      ));
+      setEditDialogOpen(false);
+      setSelectedStaff(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditDialogOpen(false);
+    setSelectedStaff(null);
+    setFormData({
+      name: "",
+      role: "",
+      phone: "",
+      email: "",
+      assignedPG: "",
+      joiningDate: "",
+      salary: "",
+    });
   };
 
   const handleFormChange = (field: string, value: string) => {
@@ -157,114 +213,112 @@ export function StaffTable() {
                 </tr>
               </thead>
               <tbody>
-                {staffData.map((staff) => (
-                  <>
-                    <tr key={`staff-${staff.id}`} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-4">
-                        <button
-                          onClick={() => handleToggleRow(staff.id)}
-                          className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 text-left"
-                        >
-                          {expandedRows.includes(staff.id) ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
-                          {staff.name}
-                        </button>
-                      </td>
-                      <td className="py-4 px-4 text-gray-900">{staff.role}</td>
-                      <td className="py-4 px-4 text-gray-900">{staff.phone}</td>
-                      <td className="py-4 px-4 text-gray-900">{staff.email}</td>
-                      <td className="py-4 px-4 text-gray-900">{staff.assignedPG}</td>
-                      <td className="py-4 px-4">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                          staff.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : staff.status === 'on-leave'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
-                        }`}>
-                          <span className={`w-2 h-2 rounded-full mr-2 ${
-                            staff.status === 'active' ? 'bg-green-500' : staff.status === 'on-leave'
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                          }`} />
-                          {staff.status === 'active' ? 'Active' : staff.status === 'on-leave'
-                            ? 'On Leave'
-                            : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                          <Edit className="w-4 h-4" />
-                          Edit
-                        </Button>
-                      </td>
-                    </tr>
-                    {/* Expanded Details Row */}
-                    {expandedRows.includes(staff.id) && (
-                      <tr className="bg-blue-50/30 border-b border-gray-100">
-                        <td colSpan={7} className="py-4 px-4">
-                          <div className="max-w-4xl">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Staff Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Full Name</p>
-                                <p className="text-gray-900">{staff.name}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Role</p>
-                                <p className="text-gray-900">{staff.role}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Phone Number</p>
-                                <p className="text-gray-900">{staff.phone}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Email Address</p>
-                                <p className="text-gray-900">{staff.email}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Assigned PG</p>
-                                <p className="text-gray-900">{staff.assignedPG}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Joining Date</p>
-                                <p className="text-gray-900">{staff.joiningDate}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Monthly Salary</p>
-                                <p className="text-gray-900">{staff.salary}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Employment Status</p>
-                                <p className="text-gray-900">
-                                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                    staff.status === 'active' 
-                                      ? 'bg-green-100 text-green-800' 
-                                      : staff.status === 'on-leave'
-                                        ? 'bg-yellow-100 text-yellow-800'
-                                        : 'bg-red-100 text-red-800'
-                                  }`}>
-                                    <span className={`w-2 h-2 rounded-full mr-2 ${
-                                      staff.status === 'active' ? 'bg-green-500' : staff.status === 'on-leave'
-                                        ? 'bg-yellow-500'
-                                        : 'bg-red-500'
-                                    }`} />
-                                    {staff.status === 'active' ? 'Active' : staff.status === 'on-leave'
-                                      ? 'On Leave'
-                                      : 'Inactive'}
-                                  </span>
-                                </p>
-                              </div>
+                {staffData.map((staff) => [
+                  <tr key={`staff-${staff.id}`} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-4">
+                      <button
+                        onClick={() => handleToggleRow(staff.id)}
+                        className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 text-left"
+                      >
+                        {expandedRows.includes(staff.id) ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                        {staff.name}
+                      </button>
+                    </td>
+                    <td className="py-4 px-4 text-gray-900">{staff.role}</td>
+                    <td className="py-4 px-4 text-gray-900">{staff.phone}</td>
+                    <td className="py-4 px-4 text-gray-900">{staff.email}</td>
+                    <td className="py-4 px-4 text-gray-900">{staff.assignedPG}</td>
+                    <td className="py-4 px-4">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                        staff.status === 'active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : staff.status === 'on-leave'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                      }`}>
+                        <span className={`w-2 h-2 rounded-full mr-2 ${
+                          staff.status === 'active' ? 'bg-green-500' : staff.status === 'on-leave'
+                            ? 'bg-yellow-500'
+                            : 'bg-red-500'
+                        }`} />
+                        {staff.status === 'active' ? 'Active' : staff.status === 'on-leave'
+                          ? 'On Leave'
+                          : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <Button variant="ghost" size="sm" className="flex items-center gap-2" onClick={() => handleOpenEditDialog(staff)}>
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </Button>
+                    </td>
+                  </tr>,
+                  // Expanded Details Row
+                  expandedRows.includes(staff.id) && (
+                    <tr className="bg-blue-50/30 border-b border-gray-100">
+                      <td colSpan={7} className="py-4 px-4">
+                        <div className="max-w-4xl">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-4">Staff Details</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Full Name</p>
+                              <p className="text-gray-900">{staff.name}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Role</p>
+                              <p className="text-gray-900">{staff.role}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Phone Number</p>
+                              <p className="text-gray-900">{staff.phone}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Email Address</p>
+                              <p className="text-gray-900">{staff.email}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Assigned PG</p>
+                              <p className="text-gray-900">{staff.assignedPG}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Joining Date</p>
+                              <p className="text-gray-900">{staff.joiningDate}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Monthly Salary</p>
+                              <p className="text-gray-900">{staff.salary}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Employment Status</p>
+                              <p className="text-gray-900">
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                                  staff.status === 'active' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : staff.status === 'on-leave'
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : 'bg-red-100 text-red-800'
+                                }`}>
+                                  <span className={`w-2 h-2 rounded-full mr-2 ${
+                                    staff.status === 'active' ? 'bg-green-500' : staff.status === 'on-leave'
+                                      ? 'bg-yellow-500'
+                                      : 'bg-red-500'
+                                  }`} />
+                                  {staff.status === 'active' ? 'Active' : staff.status === 'on-leave'
+                                    ? 'On Leave'
+                                    : 'Inactive'}
+                                </span>
+                              </p>
                             </div>
                           </div>
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ),
+                ])}
               </tbody>
             </table>
           </div>
@@ -321,6 +375,60 @@ export function StaffTable() {
               Cancel
             </Button>
             <Button onClick={handleSubmit}>Add Staff</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Staff Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Staff</DialogTitle>
+            <DialogDescription>
+              Update the details of the staff member.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="staff-name">Full Name</Label>
+                <Input id="staff-name" placeholder="Enter staff name" value={formData.name} onChange={(e) => handleFormChange("name", e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <Input id="role" placeholder="Enter role" value={formData.role} onChange={(e) => handleFormChange("role", e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input id="phone" placeholder="Enter phone number" value={formData.phone} onChange={(e) => handleFormChange("phone", e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input id="email" type="email" placeholder="Enter email" value={formData.email} onChange={(e) => handleFormChange("email", e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="assigned-pg">Assigned PG</Label>
+                <Input id="assigned-pg" placeholder="Enter PG name" value={formData.assignedPG} onChange={(e) => handleFormChange("assignedPG", e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="salary">Monthly Salary</Label>
+                <Input id="salary" placeholder="e.g., ₹18,000" value={formData.salary} onChange={(e) => handleFormChange("salary", e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="joining-date">Joining Date</Label>
+              <Input id="joining-date" type="date" value={formData.joiningDate} onChange={(e) => handleFormChange("joiningDate", e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelEdit}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

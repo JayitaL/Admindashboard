@@ -137,7 +137,16 @@ export function OwnersTable() {
 
       <Card className="border-gray-200">
         <CardHeader>
-          <CardTitle>All Owners</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>All Owners</CardTitle>
+            <Button
+              onClick={handleAddOwner}
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add New Owner
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -153,111 +162,97 @@ export function OwnersTable() {
                 </tr>
               </thead>
               <tbody>
-                {owners.map((owner) => (
-                  <>
-                    <tr key={`owner-${owner.id}`} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-4">
-                        <button
-                          onClick={() => handleToggleRow(owner.id)}
-                          className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 text-left"
-                        >
-                          {expandedRows.includes(owner.id) ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
-                          {owner.name}
-                        </button>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Mail className="w-3 h-3" />
-                            <span>{owner.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Phone className="w-3 h-3" />
-                            <span>{owner.phone}</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
+                {owners.map((owner) => [
+                  <tr key={`owner-${owner.id}`} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-4">
+                      <button
+                        onClick={() => handleToggleRow(owner.id)}
+                        className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 text-left"
+                      >
+                        {expandedRows.includes(owner.id) ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                        {owner.name}
+                      </button>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="space-y-1">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <MapPin className="w-3 h-3" />
-                          <span>{owner.address}</span>
+                          <Mail className="w-3 h-3" />
+                          <span>{owner.email}</span>
                         </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="space-y-1">
-                          {owner.pgsOwned.map((pg, idx) => (
-                            <div key={`pg-${owner.id}-${idx}`} className="flex items-center gap-2 text-sm text-gray-900">
-                              <Building2 className="w-3 h-3 text-blue-600" />
-                              <span>{pg}</span>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Phone className="w-3 h-3" />
+                          <span>{owner.phone}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <MapPin className="w-3 h-3" />
+                        <span>{owner.address}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="space-y-1">
+                        {owner.pgsOwned.map((pg, idx) => (
+                          <div key={`pg-${owner.id}-${idx}`} className="flex items-center gap-2 text-sm text-gray-900">
+                            <Building2 className="w-3 h-3 text-blue-600" />
+                            <span>{pg}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-gray-900 font-semibold">{owner.totalRooms}</td>
+                    <td className="py-4 px-4 text-gray-600">{owner.joinDate}</td>
+                  </tr>,
+                  // Expanded Details Row
+                  expandedRows.includes(owner.id) && (
+                    <tr className="bg-blue-50/30 border-b border-gray-100">
+                      <td colSpan={6} className="py-4 px-4">
+                        <div className="max-w-4xl">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Details</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Full Name</p>
+                              <p className="text-gray-900">{owner.name}</p>
                             </div>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-gray-900 font-semibold">{owner.totalRooms}</td>
-                      <td className="py-4 px-4 text-gray-600">{owner.joinDate}</td>
-                    </tr>
-                    {/* Expanded Details Row */}
-                    {expandedRows.includes(owner.id) && (
-                      <tr className="bg-blue-50/30 border-b border-gray-100">
-                        <td colSpan={6} className="py-4 px-4">
-                          <div className="max-w-4xl">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Full Name</p>
-                                <p className="text-gray-900">{owner.name}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Email Address</p>
-                                <p className="text-gray-900">{owner.email}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Phone Number</p>
-                                <p className="text-gray-900">{owner.phone}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Current Address</p>
-                                <p className="text-gray-900">{owner.address}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Properties Owned</p>
-                                <p className="text-gray-900">{owner.pgsOwned.join(", ")}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Total Rooms</p>
-                                <p className="text-gray-900">{owner.totalRooms} rooms</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Joining Date</p>
-                                <p className="text-gray-900">{owner.joinDate}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-600">Account Status</p>
-                                <p className="text-gray-900 capitalize">{owner.status}</p>
-                              </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Email Address</p>
+                              <p className="text-gray-900">{owner.email}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Phone Number</p>
+                              <p className="text-gray-900">{owner.phone}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Current Address</p>
+                              <p className="text-gray-900">{owner.address}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Properties Owned</p>
+                              <p className="text-gray-900">{owner.pgsOwned.join(", ")}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Total Rooms</p>
+                              <p className="text-gray-900">{owner.totalRooms} rooms</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Joining Date</p>
+                              <p className="text-gray-900">{owner.joinDate}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-gray-600">Account Status</p>
+                              <p className="text-gray-900 capitalize">{owner.status}</p>
                             </div>
                           </div>
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                ))}
-                {/* Add new row */}
-                <tr className="border-b border-gray-100 bg-blue-50/50 hover:bg-blue-50">
-                  <td colSpan={6} className="py-4 px-4">
-                    <button
-                      onClick={handleAddOwner}
-                      className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium w-full"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Add New Owner</span>
-                    </button>
-                  </td>
-                </tr>
+                        </div>
+                      </td>
+                    </tr>
+                  ),
+                ])}
               </tbody>
             </table>
           </div>
