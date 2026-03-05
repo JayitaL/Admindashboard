@@ -35,7 +35,6 @@ const navItems = [
       { path: "/tables/vendors", label: "Vendors" },
     ]
   },
-  { path: "/add-tables", label: "Add Tables", icon: Plus },
   { path: "/add-amenities", label: "Add Amenities", icon: Plus },
   { path: "/payments", label: "Payments", icon: CreditCard },
   { path: "/reports", label: "Reports", icon: BarChart3 },

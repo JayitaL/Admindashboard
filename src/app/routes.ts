@@ -9,7 +9,6 @@ import { ManagersTable } from "./components/ManagersTable";
 import { GuestsTable } from "./components/GuestsTable";
 import { StaffTable } from "./components/StaffTable";
 import { VendorTable } from "./components/VendorTable";
-import { AddTablesPage } from "./components/AddTablesPage";
 import { AddAmenitiesPage } from "./components/AddAmenitiesPage";
 import { GuestsPage } from "./components/GuestsPage";
 import { PaymentsPage } from "./components/PaymentsPage";
@@ -32,7 +31,6 @@ export const router = createBrowserRouter([
       { path: "tables/guests", Component: GuestsTable },
       { path: "tables/staff", Component: StaffTable },
       { path: "tables/vendors", Component: VendorTable },
-      { path: "add-tables", Component: AddTablesPage },
       { path: "add-amenities", Component: AddAmenitiesPage },
       { path: "payments", Component: PaymentsPage },
       { path: "reports", Component: ReportsPage },
